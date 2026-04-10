@@ -1,5 +1,5 @@
 <Solution>
-  <Folder Name="/services/">
+  <Folder Name="/Backend/">
     <Project Path="services/AgentService/AgentService.csproj" />
     <Project Path="services/ApiGateway/ApiGateway.csproj" />
     <Project Path="services/AuthService/AuthService.csproj" />
