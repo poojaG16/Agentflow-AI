@@ -1,11 +1,20 @@
+using AgentService;
+using AgentService.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
+using AgentService.Services;
+
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddControllers();
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen();
+builder.Services.AddDbContext<AgentDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("ConnectionString")));
 
+builder.Services.AddScoped<AgentsService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -17,30 +26,51 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.MapControllers();
 
-var summaries = new[]
+// Seed Data
+using (var scope = app.Services.CreateScope())
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    var db = scope.ServiceProvider.GetRequiredService<AgentDbContext>();
+    db.Database.Migrate();
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+    if (!db.Agents.Any())
+    {
+        db.Agents.AddRange(
+            new AgentService.Models.Agent
+            {
+                Name = "Summarizer",
+                Description = "Summarizes text",
+                Endpoint = "/summarize",
+                Method = "POST",
+                InputSchema = "{ \"text\": \"string\" }",
+                OutputSchema = "{ \"summary\": \"string\" }"
+            },
+            new AgentService.Models.Agent
+            {
+                Name = "TaskExtractor",
+                Description = "Extracts tasks",
+                Endpoint = "/extract-tasks",
+                Method = "POST",
+                InputSchema = "{ \"text\": \"string\" }",
+                OutputSchema = "{ \"tasks\": [\"string\"] }"
+            },
+            new AgentService.Models.Agent
+            {
+                Name = "EmailGenerator",
+                Description = "Generates email",
+                Endpoint = "/generate-email",
+                Method = "POST",
+                InputSchema = "{ \"tasks\": [\"string\"] }",
+                OutputSchema = "{ \"email\": \"string\" }"
+            }
+        );
+
+        db.SaveChanges();
+    }
+}
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+
 
