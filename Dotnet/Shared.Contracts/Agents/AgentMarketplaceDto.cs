@@ -1,10 +1,10 @@
-using System;
+namespace Shared.Contracts.Agents;
 
-namespace AgentService.DTOs;
-
-public class AgentResponse
+public class AgentMarketplaceDto
 {
     public Guid Id { get; set; }
+
     public string Name { get; set; } = string.Empty;
+
     public string Description { get; set; } = string.Empty;
 }

@@ -5,4 +5,5 @@
     <Project Path="services/AuthService/AuthService.csproj" />
     <Project Path="services/WorkflowService/WorkflowService.csproj" />
   </Folder>
+  <Project Path="Shared.Contracts/Shared.Contracts.csproj" />
 </Solution>

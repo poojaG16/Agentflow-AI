@@ -1,6 +1,6 @@
 using AgentService.Data;
 using AgentService.Models;
-using AgentService.DTOs;
+using Shared.Contracts.Agents;
 using Microsoft.EntityFrameworkCore;
 
 namespace AgentService.Services;
@@ -14,11 +14,11 @@ public class AgentsService
         _context = context;
     }
 
-    public async Task<List<AgentResponse>> GetMarketplaceAgents()
+    public async Task<List<AgentMarketplaceDto>> GetMarketplaceAgents()
     {
         return await _context.Agents
             .Where(a => a.IsActive)
-            .Select(a => new AgentResponse
+            .Select(a => new AgentMarketplaceDto
             {
                 Id = a.Id,
                 Name = a.Name,
